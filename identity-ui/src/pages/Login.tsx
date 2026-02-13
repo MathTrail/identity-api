@@ -1,0 +1,73 @@
+import { useEffect, useState } from 'react'
+import { useSearchParams, Link } from 'react-router-dom'
+import { LoginFlow } from '@ory/client'
+import { kratos } from '@/lib/kratos'
+import { Node } from '@/components/ory/Node'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { AuthLayout } from '@/components/auth/AuthLayout'
+
+export function Login() {
+  const [searchParams] = useSearchParams()
+  const [flow, setFlow] = useState<LoginFlow | null>(null)
+
+  useEffect(() => {
+    const flowId = searchParams.get('flow')
+    if (!flowId) {
+      window.location.href = '/api/kratos/self-service/login/browser'
+      return
+    }
+    kratos.getLoginFlow({ id: flowId }).then(({ data }) => setFlow(data))
+  }, [searchParams])
+
+  if (!flow) return null
+
+  return (
+    <AuthLayout>
+      <Card>
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl">Sign In</CardTitle>
+          <CardDescription>
+            Sign in to your MathTrail account
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {flow.ui.messages?.map((msg) => (
+            <p
+              key={msg.id}
+              className="mb-4 text-sm text-destructive"
+            >
+              {msg.text}
+            </p>
+          ))}
+          <form
+            action={flow.ui.action}
+            method={flow.ui.method}
+            className="space-y-4"
+          >
+            {flow.ui.nodes.map((node, i) => (
+              <Node key={i} node={node} />
+            ))}
+          </form>
+        </CardContent>
+        <CardFooter className="justify-center">
+          <p className="text-sm text-muted-foreground">
+            Don't have an account?{' '}
+            <Link
+              to="/auth/registration"
+              className="text-primary underline-offset-4 hover:underline"
+            >
+              Sign up
+            </Link>
+          </p>
+        </CardFooter>
+      </Card>
+    </AuthLayout>
+  )
+}

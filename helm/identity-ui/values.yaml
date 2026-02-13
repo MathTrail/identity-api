@@ -1,0 +1,6 @@
+image:
+  repository: identity-ui
+  tag: latest
+
+dapr:
+  enabled: false

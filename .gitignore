@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+identity-ui/node_modules/
+
+# Build output
+identity-ui/dist/
+
+# env file
+.env
+.env.local
+
+# Helm dependency charts (pulled automatically)
+helm/identity-ui/charts/
+helm/identity-ui/Chart.lock
+
+# Editor/IDE
+# .idea/
+# .vscode/
