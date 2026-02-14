@@ -105,7 +105,7 @@ Based on `mathtrail-mentor/.devcontainer/post-start.sh` pattern:
 ## Phase 3: Ory Infrastructure (Helm Values + Skaffold)
 
 ### 3.1 Vendor Ory charts into `mathtrail-charts` (prerequisite)
-Ory Helm charts must be vendored into the `mathtrail-charts` repo first, then referenced via `https://github.com/MathTrail/mathtrail-charts/charts` (same pattern as postgresql, redis, dapr).
+Ory Helm charts must be vendored into the `mathtrail-charts` repo first, then referenced via `https://github.com/MathTrail/charts/charts` (same pattern as postgresql, redis, dapr).
 
 **Changes to `mathtrail-charts/justfile`:**
 - Add `helm repo add ory https://k8s.ory.sh/helm/charts 2>/dev/null || true` to the repo add section
@@ -174,26 +174,26 @@ deploy:
     releases:
       # Ory infrastructure (remote charts)
       - name: kratos
-        repo: https://github.com/MathTrail/mathtrail-charts/charts
+        repo: https://github.com/MathTrail/charts/charts
         remoteChart: kratos
         namespace: mathtrail
         createNamespace: true
         valuesFiles: [values/kratos-values.yaml]
         wait: true
       - name: hydra
-        repo: https://github.com/MathTrail/mathtrail-charts/charts
+        repo: https://github.com/MathTrail/charts/charts
         remoteChart: hydra
         namespace: mathtrail
         valuesFiles: [values/hydra-values.yaml]
         wait: true
       - name: keto
-        repo: https://github.com/MathTrail/mathtrail-charts/charts
+        repo: https://github.com/MathTrail/charts/charts
         remoteChart: keto
         namespace: mathtrail
         valuesFiles: [values/keto-values.yaml]
         wait: true
       - name: oathkeeper
-        repo: https://github.com/MathTrail/mathtrail-charts/charts
+        repo: https://github.com/MathTrail/charts/charts
         remoteChart: oathkeeper
         namespace: mathtrail
         valuesFiles: [values/oathkeeper-values.yaml]
@@ -243,7 +243,7 @@ description: MathTrail Identity UI Service chart
 dependencies:
   - name: mathtrail-service-lib
     version: "0.1.1"
-    repository: "https://github.com/MathTrail/mathtrail-charts/charts"
+    repository: "https://github.com/MathTrail/charts/charts"
 ```
 
 ### 4.3 `helm/identity-ui/values.yaml`
@@ -332,7 +332,7 @@ Change strimzi remote chart reference from external repo to vendored mathtrail-c
 
 # After:
 - name: strimzi
-  repo: https://github.com/MathTrail/mathtrail-charts/charts
+  repo: https://github.com/MathTrail/charts/charts
   remoteChart: strimzi-kafka-operator
 ```
 Strimzi is already vendored in `mathtrail-charts/justfile`, so the chart is available there.
@@ -361,7 +361,7 @@ primary:
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
 | Namespace | `mathtrail` (shared) | Consistent with all existing services, simplifies Dapr/DNS |
-| Ory chart source | Vendored in `mathtrail-charts` | Consistent with postgres/redis/dapr pattern; referenced via `https://github.com/MathTrail/mathtrail-charts/charts` |
+| Ory chart source | Vendored in `mathtrail-charts` | Consistent with postgres/redis/dapr pattern; referenced via `https://github.com/MathTrail/charts/charts` |
 | Identity UI Dapr | Disabled initially | UI talks to Kratos directly via HTTP; Dapr can be added later for pub/sub |
 | Dockerfile location | Repo root | Matches mathtrail-mentor convention |
 | Config files in `configs/` | Reference/documentation | Actual configs embedded in Helm values (Ory charts support this natively) |

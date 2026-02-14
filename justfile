@@ -10,7 +10,7 @@ CHART_NAME := "identity-ui"
 
 # One-time setup: add Helm repos
 setup:
-    helm repo add mathtrail-charts https://MathTrail.github.io/mathtrail-charts/charts 2>/dev/null || true
+    helm repo add mathtrail-charts https://MathTrail.github.io/charts/charts 2>/dev/null || true
     helm repo update
 
 # Start development mode with hot-reload and port-forwarding
@@ -106,11 +106,11 @@ release-chart:
 
     CHARTS_REPO="/tmp/mathtrail-charts-repo"
     rm -rf "$CHARTS_REPO"
-    git clone git@github.com:MathTrail/mathtrail-charts.git "$CHARTS_REPO"
+    git clone git@github.com:MathTrail/charts.git "$CHARTS_REPO"
     cp /tmp/mathtrail-charts/{{ CHART_NAME }}-*.tgz "$CHARTS_REPO/charts/"
     cd "$CHARTS_REPO"
     helm repo index ./charts \
-        --url https://MathTrail.github.io/mathtrail-charts/charts
+        --url https://MathTrail.github.io/charts/charts
     git add charts/
     git commit -m "chore: release {{ CHART_NAME }} v${VERSION}"
     git push
