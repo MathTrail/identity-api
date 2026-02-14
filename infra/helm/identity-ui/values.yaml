@@ -1,0 +1,28 @@
+image:
+  repository: identity-ui
+  tag: latest
+
+service:
+  port: 8080
+
+dapr:
+  enabled: false
+
+resources:
+  requests:
+    cpu: "50m"
+    memory: "64Mi"
+  limits:
+    cpu: "200m"
+    memory: "128Mi"
+
+externalSecrets:
+  enabled: false
+  vaultPath: ""
+  keys: []
+
+rollout:
+  enabled: false
+  strategy: ""
+  steps: []
+  autoPromotionEnabled: true

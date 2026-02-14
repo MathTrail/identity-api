@@ -1,0 +1,46 @@
+{
+  "$id": "https://schemas.mathtrail.io/v1/user.schema.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MathTrail User Identity",
+  "type": "object",
+  "properties": {
+    "traits": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "format": "email",
+          "title": "E-Mail",
+          "ory.sh/kratos": {
+            "recovery": { "via": "email" },
+            "verification": { "via": "email" },
+            "credentials": { "password": { "identifier": true } }
+          }
+        },
+        "name": {
+          "type": "object",
+          "properties": {
+            "first": { "type": "string", "title": "First Name" },
+            "last": { "type": "string", "title": "Last Name" }
+          }
+        },
+        "role": {
+          "type": "string",
+          "enum": ["student", "teacher", "admin", "mentor"],
+          "title": "Platform Role",
+          "description": "Primary role of the user within MathTrail"
+        },
+        "school_context": {
+          "type": "object",
+          "properties": {
+            "school_id": { "type": "string", "title": "School ID" },
+            "class_id": { "type": "string", "title": "Current Class ID" }
+          },
+          "required": ["school_id"]
+        }
+      },
+      "required": ["email", "role"],
+      "additionalProperties": false
+    }
+  }
+}

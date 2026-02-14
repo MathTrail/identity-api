@@ -1,0 +1,116 @@
+﻿apiVersion: skaffold/v4beta12
+kind: Config
+metadata:
+  name: mathtrail-identity
+
+build:
+  local:
+    push: true
+  insecureRegistries:
+    - k3d-mathtrail-registry.localhost:5050
+  artifacts:
+    - image: identity-ui
+      docker:
+        dockerfile: Dockerfile
+
+manifests:
+  rawYaml:
+    - dapr/components.yaml
+
+deploy:
+  kubectl:
+    defaultNamespace: mathtrail
+  helm:
+    releases:
+      # --- Ory Infrastructure (vendored in mathtrail-charts) ---
+      - name: kratos
+        repo: https://MathTrail.github.io/charts/charts
+        remoteChart: kratos
+        namespace: mathtrail
+        createNamespace: true
+        valuesFiles:
+          - values/kratos-values.yaml
+        wait: true
+
+      - name: hydra
+        repo: https://MathTrail.github.io/charts/charts
+        remoteChart: hydra
+        namespace: mathtrail
+        valuesFiles:
+          - values/hydra-values.yaml
+        wait: true
+
+      - name: keto
+        repo: https://MathTrail.github.io/charts/charts
+        remoteChart: keto
+        namespace: mathtrail
+        valuesFiles:
+          - values/keto-values.yaml
+        wait: true
+
+      - name: oathkeeper
+        repo: https://MathTrail.github.io/charts/charts
+        remoteChart: oathkeeper
+        namespace: mathtrail
+        valuesFiles:
+          - values/oathkeeper-values.yaml
+        wait: true
+
+      # --- Identity UI (custom service, library chart) ---
+      - name: identity-ui
+        chartPath: infra/helm/identity-ui
+        namespace: mathtrail
+        wait: true
+        valuesFiles:
+          - infra/helm/identity-ui/values.yaml
+          - infra/helm/values-dev.yaml
+        setValueTemplates:
+          image.repository: "{{.IMAGE_REPO_identity_ui}}"
+          image.tag: "{{.IMAGE_TAG_identity_ui}}"
+
+portForward:
+  - resourceType: service
+    resourceName: kratos-public
+    namespace: mathtrail
+    port: 4433
+    localPort: 4433
+  - resourceType: service
+    resourceName: kratos-admin
+    namespace: mathtrail
+    port: 4434
+    localPort: 4434
+  - resourceType: service
+    resourceName: hydra-public
+    namespace: mathtrail
+    port: 4444
+    localPort: 4444
+  - resourceType: service
+    resourceName: hydra-admin
+    namespace: mathtrail
+    port: 4445
+    localPort: 4445
+  - resourceType: service
+    resourceName: keto-read
+    namespace: mathtrail
+    port: 4466
+    localPort: 4466
+  - resourceType: service
+    resourceName: keto-write
+    namespace: mathtrail
+    port: 4467
+    localPort: 4467
+  - resourceType: service
+    resourceName: oathkeeper-proxy
+    namespace: mathtrail
+    port: 4455
+    localPort: 4455
+  - resourceType: service
+    resourceName: oathkeeper-api
+    namespace: mathtrail
+    port: 4456
+    localPort: 4456
+  - resourceType: service
+    resourceName: identity-ui
+    namespace: mathtrail
+    port: 8080
+    localPort: 8090

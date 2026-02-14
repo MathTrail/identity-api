@@ -1,0 +1,109 @@
+# Ory Kratos - Identity Management
+# Local development configuration
+
+kratos:
+  config:
+    dsn: "postgres://mathtrail:mathtrail@postgres-postgresql.mathtrail:5432/kratos?sslmode=disable"
+
+    serve:
+      public:
+        base_url: http://localhost:4433/
+        cors:
+          enabled: true
+      admin:
+        base_url: http://kratos-admin:4434/
+
+    selfservice:
+      default_browser_return_url: http://localhost:8090/
+      allowed_return_urls:
+        - http://localhost:8090
+
+      methods:
+        password:
+          enabled: true
+
+      flows:
+        login:
+          ui_url: http://localhost:8090/auth/login
+        registration:
+          ui_url: http://localhost:8090/auth/registration
+          after:
+            password:
+              hooks:
+                - hook: session
+        recovery:
+          enabled: true
+          ui_url: http://localhost:8090/auth/recovery
+        verification:
+          enabled: true
+          ui_url: http://localhost:8090/auth/verification
+
+    identity:
+      default_schema_id: mathtrail-user
+      schemas:
+        - id: mathtrail-user
+          url: file:///etc/config/identity.schema.json
+
+    log:
+      level: info
+
+  identitySchemas:
+    "identity.schema.json": |
+      {
+        "$id": "https://schemas.mathtrail.io/v1/user.schema.json",
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "title": "MathTrail User Identity",
+        "type": "object",
+        "properties": {
+          "traits": {
+            "type": "object",
+            "properties": {
+              "email": {
+                "type": "string",
+                "format": "email",
+                "title": "E-Mail",
+                "ory.sh/kratos": {
+                  "recovery": { "via": "email" },
+                  "verification": { "via": "email" },
+                  "credentials": { "password": { "identifier": true } }
+                }
+              },
+              "name": {
+                "type": "object",
+                "properties": {
+                  "first": { "type": "string", "title": "First Name" },
+                  "last": { "type": "string", "title": "Last Name" }
+                }
+              },
+              "role": {
+                "type": "string",
+                "enum": ["student", "teacher", "admin", "mentor"],
+                "title": "Platform Role",
+                "description": "Primary role of the user within MathTrail"
+              },
+              "school_context": {
+                "type": "object",
+                "properties": {
+                  "school_id": { "type": "string", "title": "School ID" },
+                  "class_id": { "type": "string", "title": "Current Class ID" }
+                },
+                "required": ["school_id"]
+              }
+            },
+            "required": ["email", "role"],
+            "additionalProperties": false
+          }
+        }
+      }
+
+  automigration:
+    enabled: true
+    type: job
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi

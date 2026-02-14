@@ -1,0 +1,12 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: ory-oathkeeper-auth
+spec:
+  type: middleware.http.bearer
+  version: v1
+  metadata:
+    - name: issuerURL
+      value: "http://hydra-public:4444/"
+    - name: audience
+      value: "mathtrail"

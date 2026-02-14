@@ -1,0 +1,9 @@
+# On-prem overlay: bare-metal Kubernetes
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "64Mi"
+  limits:
+    cpu: "500m"
+    memory: "256Mi"
