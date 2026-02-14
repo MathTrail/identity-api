@@ -58,9 +58,12 @@ deploy:
 
       # --- Identity UI (custom service, library chart) ---
       - name: identity-ui
-        chartPath: helm/identity-ui
+        chartPath: infra/helm/identity-ui
         namespace: mathtrail
         wait: true
+        valuesFiles:
+          - infra/helm/identity-ui/values.yaml
+          - infra/helm/values-dev.yaml
         setValueTemplates:
           image.repository: "{{.IMAGE_REPO_identity_ui}}"
           image.tag: "{{.IMAGE_TAG_identity_ui}}"
