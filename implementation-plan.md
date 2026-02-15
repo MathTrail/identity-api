@@ -34,7 +34,7 @@ mathtrail-identity/
 │       ├── Chart.yaml               # Depends on mathtrail-service-lib v0.1.1
 │       ├── values.yaml
 │       └── templates/
-│           └── all.yaml             # Includes library templates
+│           └── main.yaml             # Includes library templates
 ├── identity-ui/                      # Custom Go service
 │   ├── cmd/
 │   │   └── main.go
@@ -268,8 +268,8 @@ env:
     value: "info"
 ```
 
-### 4.4 `helm/identity-ui/templates/all.yaml`
-Identical pattern to `mathtrail-mentor/helm/mathtrail-mentor/templates/all.yaml` — includes all library templates.
+### 4.4 `helm/identity-ui/templates/main.yaml`
+Identical pattern to `mathtrail-mentor/helm/mathtrail-mentor/templates/main.yaml` — includes all library templates.
 
 ### 4.5 `identity-ui/cmd/main.go`
 Minimal Go HTTP server with:

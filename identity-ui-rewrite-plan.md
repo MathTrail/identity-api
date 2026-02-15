@@ -74,7 +74,7 @@ identity-ui/
 ### No changes needed
 - `skaffold.yaml` — same `identity-ui` image name, same chartPath
 - `helm/identity-ui/Chart.yaml` — same
-- `helm/identity-ui/templates/all.yaml` — same
+- `helm/identity-ui/templates/main.yaml` — same
 - All Ory values files, configs, dapr, justfile — unchanged
 
 ---
