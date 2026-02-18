@@ -91,6 +91,20 @@ oathkeeper:
       mutators:
         - handler: noop
 
+    - id: "mathtrail-mentor-swagger-rule"
+      upstream:
+        url: "http://mathtrail-mentor:8080"
+        strip_path: "/swagger/mentor"
+      match:
+        methods: ["GET"]
+        url: "<http|https>://<.*>/swagger/mentor/<.*>"
+      authenticators:
+        - handler: cookie_session
+      authorizer:
+        handler: allow
+      mutators:
+        - handler: noop
+
     - id: "mathtrail-api-rule"
       upstream:
         url: "http://mathtrail-mentor:8080"
@@ -98,6 +112,7 @@ oathkeeper:
         methods: ["GET", "POST", "PUT", "DELETE"]
         url: "<http|https>://<.*>/api/<.*>"
       authenticators:
+        - handler: cookie_session
         - handler: bearer_token
       authorizer:
         handler: allow
