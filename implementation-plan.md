@@ -148,7 +148,7 @@ Ory Helm charts must be vendored into the `mathtrail-charts` repo first, then re
 Hybrid config following both `mathtrail-infra-local` and `mathtrail-mentor` patterns:
 
 ```yaml
-apiVersion: skaffold/v4beta12
+apiVersion: skaffold/v4beta13
 kind: Config
 metadata:
   name: mathtrail-identity
