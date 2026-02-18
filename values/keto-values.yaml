@@ -10,6 +10,8 @@ keto:
         name: User
       - id: 1
         name: ClassGroup
+      - id: 2
+        name: Monitoring
 
     serve:
       read:

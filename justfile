@@ -65,6 +65,50 @@ create-test-user:
       }' | jq .
     echo "Test user created"
 
+# -- Monitoring Access (Keto) --------------------------------------------------
+
+# Grant a user access to Grafana and Pyroscope via Oathkeeper
+# Usage: just grant-monitoring <kratos-user-uuid>
+grant-monitoring USER_ID:
+    #!/bin/bash
+    set -e
+    echo "Granting monitoring access to {{ USER_ID }}..."
+    curl -sf -X PUT http://localhost:4467/admin/relation-tuples \
+      -H "Content-Type: application/json" \
+      -d '{
+        "namespace": "Monitoring",
+        "object": "ui",
+        "relation": "viewer",
+        "subject_id": "{{ USER_ID }}"
+      }' | jq .
+    echo "Done. User can now access /observability/grafana/ and /observability/pyroscope/"
+
+# Revoke monitoring access from a user
+# Usage: just revoke-monitoring <kratos-user-uuid>
+revoke-monitoring USER_ID:
+    #!/bin/bash
+    set -e
+    echo "Revoking monitoring access from {{ USER_ID }}..."
+    curl -sf -X DELETE \
+      "http://localhost:4467/admin/relation-tuples?namespace=Monitoring&object=ui&relation=viewer&subject_id={{ USER_ID }}"
+    echo "Done."
+
+# Check if a user has monitoring access (returns {allowed: true/false})
+# Usage: just check-monitoring <kratos-user-uuid>
+check-monitoring USER_ID:
+    curl -sf -X POST http://localhost:4466/relation-tuples/check \
+      -H "Content-Type: application/json" \
+      -d '{
+        "namespace": "Monitoring",
+        "object": "ui",
+        "relation": "viewer",
+        "subject_id": "{{ USER_ID }}"
+      }' | jq .
+
+# List all users with monitoring access
+list-monitoring:
+    curl -sf "http://localhost:4466/admin/relation-tuples?namespace=Monitoring&object=ui&relation=viewer" | jq '.relation_tuples[].subject_id'
+
 # Add a Keto relation tuple (teacher -> class)
 add-test-relation:
     #!/bin/bash
