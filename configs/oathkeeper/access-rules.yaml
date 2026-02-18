@@ -91,6 +91,7 @@
         headers:
           X-Webauth-User: "{{ print .Extra.identity.traits.email }}"
           X-User-ID: "{{ print .Subject }}"
+          X-Webauth-Role: "{{ if or (eq .Extra.identity.traits.role \"admin\") (eq .Extra.identity.traits.role \"mentor\") }}Admin{{ else if eq .Extra.identity.traits.role \"teacher\" }}Editor{{ else }}Viewer{{ end }}"
 
 # Pyroscope - cookie session + Keto monitoring:ui#viewer check
 - id: "mathtrail-pyroscope-rule"
