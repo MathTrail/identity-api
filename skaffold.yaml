@@ -30,7 +30,7 @@ deploy:
     releases:
       # --- Ory Infrastructure (vendored in mathtrail-charts) ---
       - name: kratos
-        repo: https://MathTrail.github.io/charts/charts
+        repo: ${CHARTS_REPO}
         remoteChart: kratos
         namespace: mathtrail
         createNamespace: true
@@ -39,7 +39,7 @@ deploy:
         wait: true
 
       - name: hydra
-        repo: https://MathTrail.github.io/charts/charts
+        repo: ${CHARTS_REPO}
         remoteChart: hydra
         namespace: mathtrail
         valuesFiles:
@@ -47,7 +47,7 @@ deploy:
         wait: true
 
       - name: keto
-        repo: https://MathTrail.github.io/charts/charts
+        repo: ${CHARTS_REPO}
         remoteChart: keto
         namespace: mathtrail
         valuesFiles:
@@ -55,7 +55,7 @@ deploy:
         wait: true
 
       - name: oathkeeper
-        repo: https://MathTrail.github.io/charts/charts
+        repo: ${CHARTS_REPO}
         remoteChart: oathkeeper
         namespace: mathtrail
         valuesFiles:
