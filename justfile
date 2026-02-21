@@ -1,8 +1,9 @@
 ﻿# MathTrail Identity Stack
 
 set shell := ["bash", "-c"]
-set dotenv-load := true
-set dotenv-path := env("HOME") + "/.env.shared"
+set dotenv-load
+set dotenv-path := "/etc/mathtrail/platform.env"
+set export
 
 NAMESPACE := env_var("NAMESPACE")
 SERVICE := "identity-ui"

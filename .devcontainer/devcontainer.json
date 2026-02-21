@@ -17,12 +17,12 @@
         "ghcr.io/dapr/cli/dapr-cli:0": {}
     },
     "mounts": [
-        "source=${localEnv:HOME}${localEnv:USERPROFILE}/.kube,target=/home/vscode/.kube-host,type=bind,consistency=cached"
+        "source=${localEnv:HOME}${localEnv:USERPROFILE}/.kube,target=/home/vscode/.kube-host,type=bind,consistency=cached,readonly"
     ],
-    "remoteEnv": {
-        "KUBECONFIG": "/home/vscode/.kube/k3d-mathtrail-dev.yaml",
-        "SKAFFOLD_DEFAULT_REPO": "k3d-mathtrail-registry.localhost:5050"
-    },
+    "runArgs": [
+        "--add-host=host.docker.internal:host-gateway",
+        "--add-host=k3d-mathtrail-registry.localhost:host-gateway"
+    ],
     "customizations": {
         "vscode": {
             "extensions": [
