@@ -1,8 +1,11 @@
 ﻿# MathTrail Identity Stack
 
 set shell := ["bash", "-c"]
+set dotenv-load
+set dotenv-path := "/etc/mathtrail/platform.env"
+set export
 
-NAMESPACE := "mathtrail"
+NAMESPACE := env_var("NAMESPACE")
 SERVICE := "identity-ui"
 CHART_NAME := "identity-ui"
 
@@ -10,7 +13,7 @@ CHART_NAME := "identity-ui"
 
 # One-time setup: add Helm repos
 setup:
-    helm repo add mathtrail-charts https://MathTrail.github.io/charts/charts 2>/dev/null || true
+    helm repo add mathtrail-charts ${CHARTS_REPO} 2>/dev/null || true
     helm repo update
 
 # Start development mode with hot-reload and port-forwarding
@@ -65,6 +68,87 @@ create-test-user:
       }' | jq .
     echo "Test user created"
 
+# -- Monitoring Access (Keto) --------------------------------------------------
+
+# Grant a user access to Grafana and Pyroscope via Oathkeeper
+# Usage: just grant-monitoring <kratos-user-uuid>
+grant-monitoring USER_ID:
+    #!/bin/bash
+    set -e
+    echo "Granting monitoring access to {{ USER_ID }}..."
+    curl -sf -X PUT http://localhost:4467/admin/relation-tuples \
+      -H "Content-Type: application/json" \
+      -d '{
+        "namespace": "Monitoring",
+        "object": "ui",
+        "relation": "viewer",
+        "subject_id": "{{ USER_ID }}"
+      }' | jq .
+    echo "Done. User can now access /observability/grafana/ and /observability/pyroscope/"
+
+# Revoke monitoring access from a user
+# Usage: just revoke-monitoring <kratos-user-uuid>
+revoke-monitoring USER_ID:
+    #!/bin/bash
+    set -e
+    echo "Revoking monitoring access from {{ USER_ID }}..."
+    curl -sf -X DELETE \
+      "http://localhost:4467/admin/relation-tuples?namespace=Monitoring&object=ui&relation=viewer&subject_id={{ USER_ID }}"
+    echo "Done."
+
+# Check if a user has monitoring access (returns {allowed: true/false})
+# Usage: just check-monitoring <kratos-user-uuid>
+check-monitoring USER_ID:
+    curl -sf -X POST http://localhost:4466/relation-tuples/check \
+      -H "Content-Type: application/json" \
+      -d '{
+        "namespace": "Monitoring",
+        "object": "ui",
+        "relation": "viewer",
+        "subject_id": "{{ USER_ID }}"
+      }' | jq .
+
+# List all users with monitoring access
+list-monitoring:
+    curl -sf "http://localhost:4466/admin/relation-tuples?namespace=Monitoring&object=ui&relation=viewer" | jq '.relation_tuples[].subject_id'
+
+# Auto-seed monitoring access for all admin and mentor users from Kratos
+# Queries Kratos Admin API for all identities with role=admin or role=mentor
+# and calls grant-monitoring for each one.
+# Run this after deploying Keto with the Monitoring namespace, or after bulk user import.
+seed-monitoring:
+    #!/bin/bash
+    set -e
+    echo "Seeding monitoring access for all admin and mentor users..."
+    echo ""
+
+    # Fetch all identities from Kratos admin API (paginated, max 250 per page)
+    IDENTITIES=$(curl -sf "http://localhost:4434/admin/identities?per_page=250" | jq -r '.[]')
+
+    COUNT=0
+    while IFS= read -r identity; do
+        ROLE=$(echo "$identity" | jq -r '.traits.role // empty')
+        USER_ID=$(echo "$identity" | jq -r '.id')
+        EMAIL=$(echo "$identity" | jq -r '.traits.email // "unknown"')
+
+        if [[ "$ROLE" == "admin" || "$ROLE" == "mentor" ]]; then
+            echo "Granting monitoring access: $EMAIL ($USER_ID) [$ROLE]"
+            curl -sf -X PUT http://localhost:4467/admin/relation-tuples \
+              -H "Content-Type: application/json" \
+              -d "{
+                \"namespace\": \"Monitoring\",
+                \"object\": \"ui\",
+                \"relation\": \"viewer\",
+                \"subject_id\": \"$USER_ID\"
+              }" > /dev/null
+            COUNT=$((COUNT + 1))
+        fi
+    done < <(curl -sf "http://localhost:4434/admin/identities?per_page=250" | jq -c '.[]')
+
+    echo ""
+    echo "Done. Granted monitoring access to $COUNT user(s)."
+    echo "Run 'just list-monitoring' to verify."
+
 # Add a Keto relation tuple (teacher -> class)
 add-test-relation:
     #!/bin/bash
@@ -104,13 +188,13 @@ release-chart:
     echo "Packaging {{ CHART_NAME }} v${VERSION}..."
     helm package "$CHART_DIR" --destination /tmp/mathtrail-charts
 
-    CHARTS_REPO="/tmp/mathtrail-charts-repo"
-    rm -rf "$CHARTS_REPO"
-    git clone git@github.com:MathTrail/charts.git "$CHARTS_REPO"
-    cp /tmp/mathtrail-charts/{{ CHART_NAME }}-*.tgz "$CHARTS_REPO/charts/"
-    cd "$CHARTS_REPO"
+    CHARTS_REPO_DIR="/tmp/mathtrail-charts-repo"
+    rm -rf "$CHARTS_REPO_DIR"
+    git clone git@github.com:MathTrail/charts.git "$CHARTS_REPO_DIR"
+    cp /tmp/mathtrail-charts/{{ CHART_NAME }}-*.tgz "$CHARTS_REPO_DIR/charts/"
+    cd "$CHARTS_REPO_DIR"
     helm repo index ./charts \
-        --url https://MathTrail.github.io/charts/charts
+        --url ${CHARTS_REPO}
     git add charts/
     git commit -m "chore: release {{ CHART_NAME }} v${VERSION}"
     git push

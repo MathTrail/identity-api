@@ -14,7 +14,7 @@ Infra: infra/helm/identity-ui/ + values/*.yaml for Ory components
 # Communication Map
 Inbound: Browser → Identity UI → Kratos APIs (via same-origin proxy)
 Outbound: Kratos webhook → mathtrail-profile (POST registration event)
-Publishes: `identity.registration.completed` (via Kratos webhook → Dapr)
+Publishes: `identity.registration.completed` (via Kratos webhook → Kafka)
 Secrets (Vault): secret/data/{env}/mathtrail-identity/kratos-dsn, hydra-dsn
 
 # Development Standards

@@ -8,6 +8,7 @@ identity-ui/dist/
 # env file
 .env
 .env.local
+skaffold.env
 
 # Helm dependency charts (pulled automatically)
 helm/identity-ui/charts/

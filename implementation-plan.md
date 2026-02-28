@@ -27,14 +27,12 @@ mathtrail-identity/
 │   │   └── namespaces.ts            # ReBAC namespace definitions
 │   └── oathkeeper/
 │       └── access-rules.yaml        # Access rules reference
-├── dapr/
-│   └── components.yaml              # Dapr middleware component for Oathkeeper
 ├── helm/
 │   └── identity-ui/
 │       ├── Chart.yaml               # Depends on mathtrail-service-lib v0.1.1
 │       ├── values.yaml
 │       └── templates/
-│           └── all.yaml             # Includes library templates
+│           └── main.yaml             # Includes library templates
 ├── identity-ui/                      # Custom Go service
 │   ├── cmd/
 │   │   └── main.go
@@ -77,7 +75,7 @@ Following `mathtrail-mentor/.claude/CLAUDE.md` pattern. Documents the hybrid arc
 ### 2.1 `.devcontainer/devcontainer.json`
 Based on `mathtrail-mentor/.devcontainer/devcontainer.json` with additions:
 
-- **Base features**: Go 1.25.7, Docker-in-Docker, kubectl/helm, just, dapr-cli
+- **Base features**: Go 1.25.7, Docker-in-Docker, kubectl/helm, just
 - **Added**: Ory CLI tools installed via Dockerfile
 - **Ports**: 4433, 4434 (Kratos), 4444, 4445 (Hydra), 4466, 4467 (Keto), 4455, 4456 (Oathkeeper), 8080 (Identity UI)
 - **Extensions**: golang.go, vscode-docker, vscode-kubernetes-tools, helm, vscode-yaml, gitlens, justfile, helm-intellisense, claude-code
@@ -105,7 +103,7 @@ Based on `mathtrail-mentor/.devcontainer/post-start.sh` pattern:
 ## Phase 3: Ory Infrastructure (Helm Values + Skaffold)
 
 ### 3.1 Vendor Ory charts into `mathtrail-charts` (prerequisite)
-Ory Helm charts must be vendored into the `mathtrail-charts` repo first, then referenced via `https://github.com/MathTrail/charts/charts` (same pattern as postgresql, redis, dapr).
+Ory Helm charts must be vendored into the `mathtrail-charts` repo first, then referenced via `https://github.com/MathTrail/charts/charts` (same pattern as postgresql, redis).
 
 **Changes to `mathtrail-charts/justfile`:**
 - Add `helm repo add ory https://k8s.ory.sh/helm/charts 2>/dev/null || true` to the repo add section
@@ -148,7 +146,7 @@ Ory Helm charts must be vendored into the `mathtrail-charts` repo first, then re
 Hybrid config following both `mathtrail-infra-local` and `mathtrail-mentor` patterns:
 
 ```yaml
-apiVersion: skaffold/v4beta12
+apiVersion: skaffold/v4beta13
 kind: Config
 metadata:
   name: mathtrail-identity
@@ -162,10 +160,6 @@ build:
     - image: identity-ui
       docker:
         dockerfile: Dockerfile
-
-manifests:
-  rawYaml:
-    - dapr/components.yaml
 
 deploy:
   kubectl:
@@ -252,9 +246,6 @@ image:
   repository: identity-ui
   tag: latest
 
-dapr:
-  enabled: false  # Identity UI talks directly to Kratos/Hydra, no Dapr needed initially
-
 env:
   - name: SERVER_PORT
     value: "8080"
@@ -268,8 +259,8 @@ env:
     value: "info"
 ```
 
-### 4.4 `helm/identity-ui/templates/all.yaml`
-Identical pattern to `mathtrail-mentor/helm/mathtrail-mentor/templates/all.yaml` — includes all library templates.
+### 4.4 `helm/identity-ui/templates/main.yaml`
+Identical pattern to `mathtrail-mentor/helm/mathtrail-mentor/templates/main.yaml` — includes all library templates.
 
 ### 4.5 `identity-ui/cmd/main.go`
 Minimal Go HTTP server with:
@@ -295,14 +286,7 @@ Reference copy of the access rules embedded in `values/oathkeeper-values.yaml`.
 
 ---
 
-## Phase 6: Dapr Middleware
-
-### 6.1 `dapr/components.yaml`
-Dapr middleware component for bearer token validation, deployed via `manifests.rawYaml` in skaffold.yaml (same pattern as `mathtrail-infra/dapr/components.yaml`).
-
----
-
-## Phase 7: Justfile
+## Phase 6: Justfile
 
 Following `mathtrail-mentor/justfile` pattern with additional Ory-specific recipes:
 - `setup` — add helm repos (mathtrail-charts + ory)
@@ -360,9 +344,8 @@ primary:
 
 | Decision | Choice | Rationale |
 |----------|--------|-----------|
-| Namespace | `mathtrail` (shared) | Consistent with all existing services, simplifies Dapr/DNS |
-| Ory chart source | Vendored in `mathtrail-charts` | Consistent with postgres/redis/dapr pattern; referenced via `https://github.com/MathTrail/charts/charts` |
-| Identity UI Dapr | Disabled initially | UI talks to Kratos directly via HTTP; Dapr can be added later for pub/sub |
+| Namespace | `mathtrail` (shared) | Consistent with all existing services, simplifies DNS |
+| Ory chart source | Vendored in `mathtrail-charts` | Consistent with postgres/redis pattern; referenced via `https://github.com/MathTrail/charts/charts` |
 | Dockerfile location | Repo root | Matches mathtrail-mentor convention |
 | Config files in `configs/` | Reference/documentation | Actual configs embedded in Helm values (Ory charts support this natively) |
 

@@ -3,13 +3,15 @@
 
 keto:
   config:
-    dsn: "postgres://mathtrail:mathtrail@postgres-postgresql.mathtrail:5432/keto?sslmode=disable"
+    dsn: "postgres://mathtrail:mathtrail@postgres-pgbouncer.mathtrail:6432/keto?sslmode=disable"
 
     namespaces:
       - id: 0
         name: User
       - id: 1
         name: ClassGroup
+      - id: 2
+        name: Monitoring
 
     serve:
       read:

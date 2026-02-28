@@ -1,4 +1,5 @@
 FROM mcr.microsoft.com/devcontainers/base:ubuntu-24.04
+COPY --from=ghcr.io/mathtrail/platform-env:1 /config/global.env /etc/mathtrail/platform.env
 
 # Install Skaffold
 RUN curl -Lo /tmp/skaffold "https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64" \
@@ -15,5 +16,6 @@ RUN bash -c "curl -sL https://raw.githubusercontent.com/ory/meta/master/install.
     && bash -c "curl -sL https://raw.githubusercontent.com/ory/meta/master/install.sh | sh -s -- -b /usr/local/bin oathkeeper"
 
 # Pre-configure Docker daemon to trust the k3d registry
-RUN mkdir -p /etc/docker \
-    && echo '{"insecure-registries": ["k3d-mathtrail-registry.localhost:5050"]}' > /etc/docker/daemon.json
+RUN mkdir -p /etc/containers && \
+    printf '[registry]\nlocation = "k3d-mathtrail-registry.localhost:5050"\ninsecure = true\n' \
+    > /etc/containers/registries.conf.d/k3d.conf

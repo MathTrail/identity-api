@@ -6,7 +6,7 @@ on:
 
 jobs:
   release:
-    runs-on: ubuntu-latest
+    runs-on: mathtrail-runners
     steps:
       - uses: actions/checkout@v4
 

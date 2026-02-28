@@ -30,7 +30,22 @@
   mutators:
     - handler: noop
 
-# API endpoints - bearer token required, X-User-ID injected
+# Swagger UI - cookie session required (browser access)
+- id: "mathtrail-mentor-swagger-rule"
+  upstream:
+    url: "http://mathtrail-mentor:8080"
+    strip_path: "/swagger/mentor"
+  match:
+    methods: ["GET"]
+    url: "<http|https>://<.*>/swagger/mentor/<.*>"
+  authenticators:
+    - handler: cookie_session
+  authorizer:
+    handler: allow
+  mutators:
+    - handler: noop
+
+# API endpoints - cookie session or bearer token, X-User-ID injected
 - id: "mathtrail-api-rule"
   upstream:
     url: "http://mathtrail-mentor:8080"
@@ -38,6 +53,7 @@
     methods: ["GET", "POST", "PUT", "DELETE"]
     url: "<http|https>://<.*>/api/<.*>"
   authenticators:
+    - handler: cookie_session
     - handler: bearer_token
   authorizer:
     handler: allow
@@ -63,3 +79,59 @@
         headers:
           X-User-ID: "{{ print .Subject }}"
           X-User-Role: "{{ print .Extra.role }}"
+
+# Grafana (LGTM) - cookie session + Keto monitoring:ui#viewer check
+- id: "mathtrail-grafana-rule"
+  upstream:
+    url: "http://lgtm-grafana.monitoring.svc.cluster.local:80"
+    strip_path: "/observability/grafana"
+  match:
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+    url: "<http|https>://<.*>/observability/grafana/<.*>"
+  authenticators:
+    - handler: cookie_session
+  authorizer:
+    handler: remote_json
+    config:
+      remote: http://keto-read:4466/relation-tuples/check
+      payload: |
+        {
+          "namespace": "Monitoring",
+          "object": "ui",
+          "relation": "viewer",
+          "subject_id": "{{ print .Subject }}"
+        }
+  mutators:
+    - handler: header
+      config:
+        headers:
+          X-Webauth-User: "{{ print .Extra.identity.traits.email }}"
+          X-User-ID: "{{ print .Subject }}"
+          X-Webauth-Role: "{{ if or (eq .Extra.identity.traits.role \"admin\") (eq .Extra.identity.traits.role \"mentor\") }}Admin{{ else if eq .Extra.identity.traits.role \"teacher\" }}Editor{{ else }}Viewer{{ end }}"
+
+# Pyroscope - cookie session + Keto monitoring:ui#viewer check
+- id: "mathtrail-pyroscope-rule"
+  upstream:
+    url: "http://pyroscope.monitoring.svc.cluster.local:4040"
+    strip_path: "/observability/pyroscope"
+  match:
+    methods: ["GET", "POST"]
+    url: "<http|https>://<.*>/observability/pyroscope/<.*>"
+  authenticators:
+    - handler: cookie_session
+  authorizer:
+    handler: remote_json
+    config:
+      remote: http://keto-read:4466/relation-tuples/check
+      payload: |
+        {
+          "namespace": "Monitoring",
+          "object": "ui",
+          "relation": "viewer",
+          "subject_id": "{{ print .Subject }}"
+        }
+  mutators:
+    - handler: header
+      config:
+        headers:
+          X-User-ID: "{{ print .Subject }}"

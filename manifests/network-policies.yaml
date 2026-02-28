@@ -1,0 +1,90 @@
+# NetworkPolicies for the mathtrail namespace
+# Controls egress from Oathkeeper and other mathtrail services to monitoring.
+
+---
+# Allow Oathkeeper to forward proxied requests to Grafana and Pyroscope in monitoring
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-oathkeeper-monitoring-egress
+  namespace: mathtrail
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: oathkeeper
+  policyTypes:
+    - Egress
+  egress:
+    # Kratos session validation (intra-namespace)
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: kratos
+      ports:
+        - protocol: TCP
+          port: 4433  # kratos-public
+    # Keto relation-tuple check (intra-namespace)
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: keto
+      ports:
+        - protocol: TCP
+          port: 4466  # keto-read
+    # Forward to Grafana and Pyroscope in monitoring namespace
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - protocol: TCP
+          port: 80    # Grafana HTTP
+        - protocol: TCP
+          port: 4040  # Pyroscope
+    # DNS resolution
+    - ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
+
+---
+# Allow mentor-api to push OTel traces to the collector in monitoring
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-mentor-otel-egress
+  namespace: mathtrail
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: mentor-api
+  policyTypes:
+    - Egress
+  egress:
+    # OTel Collector (monitoring namespace)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - protocol: TCP
+          port: 4317  # OTLP gRPC
+        - protocol: TCP
+          port: 4318  # OTLP HTTP
+        - protocol: TCP
+          port: 4040  # Pyroscope push
+    # App → OTel Collector Zipkin (intra-pod, same namespace)
+    - to:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+      ports:
+        - protocol: TCP
+          port: 9411  # Zipkin
+    # DNS resolution
+    - ports:
+        - protocol: UDP
+          port: 53
+        - protocol: TCP
+          port: 53
