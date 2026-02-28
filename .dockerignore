@@ -3,7 +3,6 @@ node_modules
 .claude
 helm
 configs
-dapr
 values
 *.md
 .git

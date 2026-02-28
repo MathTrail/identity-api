@@ -74,7 +74,7 @@ spec:
           port: 4318  # OTLP HTTP
         - protocol: TCP
           port: 4040  # Pyroscope push
-    # Dapr sidecar → OTel Collector Zipkin (intra-pod, same namespace)
+    # App → OTel Collector Zipkin (intra-pod, same namespace)
     - to:
         - namespaceSelector:
             matchLabels:

@@ -31,7 +31,7 @@ stack (Kratos, Hydra, Keto, Oathkeeper) plus a custom Identity UI SPA.
 | `configs/kratos/identity.schema.json` | User identity JSON schema |
 | `configs/keto/namespaces.ts` | Keto ReBAC namespace definitions |
 | `configs/oathkeeper/access-rules.yaml` | Oathkeeper access rules |
-| `dapr/components.yaml` | Dapr middleware component |
+
 | `skaffold.yaml` | Skaffold pipeline (Ory infra + Identity UI) |
 | `justfile` | Automation recipes |
 

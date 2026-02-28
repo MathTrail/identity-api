@@ -20,7 +20,6 @@ build:
 
 manifests:
   rawYaml:
-    - dapr/components.yaml
     - manifests/network-policies.yaml
 
 deploy:

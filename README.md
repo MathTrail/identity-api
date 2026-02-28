@@ -19,10 +19,10 @@ Identity is split into infrastructure (Ory services deployed from remote charts)
 - Identity UI is a SPA that talks to Kratos via nginx reverse proxy
 - Oathkeeper sits in front of all APIs for token validation
 
-## API & Communication (Dapr)
+## API & Communication
 - **Inbound**: Browser → Identity UI → Kratos APIs
 - **Outbound**: Kratos webhook → mathtrail-profile (registration event)
-- **Publishes**: `identity.registration.completed` (via webhook → Dapr)
+- **Publishes**: `identity.registration.completed` (via webhook → Kafka)
 
 ## Data Persistence
 - **PostgreSQL**: Kratos identities, Hydra clients, Keto relations (each has own DB)

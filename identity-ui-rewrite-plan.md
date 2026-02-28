@@ -75,7 +75,7 @@ identity-ui/
 - `skaffold.yaml` — same `identity-ui` image name, same chartPath
 - `helm/identity-ui/Chart.yaml` — same
 - `helm/identity-ui/templates/main.yaml` — same
-- All Ory values files, configs, dapr, justfile — unchanged
+- All Ory values files, configs, justfile — unchanged
 
 ---
 
@@ -117,7 +117,6 @@ node_modules
 .claude
 helm
 configs
-dapr
 values
 *.md
 .git
@@ -437,7 +436,7 @@ Registration, Recovery, and Verification follow the same pattern with their resp
 {
   "features": {
     "ghcr.io/devcontainers/features/node:1": { "version": "20" },  // was Go
-    // keep: docker-in-docker, kubectl-helm, just, dapr-cli
+    // keep: docker-in-docker, kubectl-helm, just
   },
   // add extensions: dbaeumer.vscode-eslint, esbenp.prettier-vscode, bradlc.vscode-tailwindcss
   // keep: vscode-docker, kubernetes, helm, yaml, gitlens, justfile, claude-code
@@ -455,9 +454,6 @@ cd /workspaces/mathtrail-identity/identity-ui && npm ci 2>/dev/null || true
 image:
   repository: identity-ui
   tag: latest
-
-dapr:
-  enabled: false
 ```
 
 No env vars needed — `kratos.ts` uses relative `/api/kratos` path, nginx proxies to `kratos-public:4433`. No `SERVER_PORT` needed — nginx listens on 8080 (matching service-lib default).
